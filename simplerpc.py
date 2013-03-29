@@ -84,6 +84,13 @@ class rpc_handler:
         '{"jsonrpc": "2.0", "id": "1", "error": {"message": "Method not found.", "code": -32601}}'
         >>> r.handle_request('{"jsonrpc": "2.0", "method": "hello", "id": "1"}')
         '{"jsonrpc": "2.0", "result": "Hello, World!", "id": "1"}'
+        >>> def paramtest(x, y):
+        ...     return x+y
+        >>> r.add_endpoint('paramtest', paramtest)
+        >>> r.handle_request('{"jsonrpc": "2.0", "method": "paramtest", "params": [2,3], "id": "1"}')
+        '{"jsonrpc": "2.0", "result": 5, "id": "1"}'
+        >>> r.handle_request('{"jsonrpc": "2.0", "method": "paramtest", "params": {"x": 2, "y": 3}, "id": "1"}')
+        '{"jsonrpc": "2.0", "result": 5, "id": "1"}'
         """
         # parse json string
         try:
@@ -104,12 +111,18 @@ class rpc_handler:
             method = self.endpoints[d['method']]
         else:
             return error_object(-32601, "Method not found.", id=d['id']).render_to_json()            
- 
-        # execute endpoint function
-        
 
+        # execute endpoint function
         try:
-            result = method()
+            # check if params field is list or dict or not present at all
+            if 'params' not in d.keys(): 
+                result = method()
+            elif isinstance(d['params'], list):
+                result = method(*d['params'])
+            elif isinstance(d['params'], dict):
+                result = method(**d['params'])
+            else:
+                return  error_object(-32602, 'Invalid method parameter(s)', id=d['id']).render_to_json()
         except Exception, e:
             return error_object(-32603, 'There was an error in the executed method.', id=d['id']).render_to_json()        
 
