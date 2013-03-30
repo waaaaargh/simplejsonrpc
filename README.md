@@ -5,14 +5,17 @@ A simple JSON-RPC implementation in python.
 
 JSON-RPC specs are over at http://www.jsonrpc.org/specification
 
-DONE
-----
+Features
+--------
   * jsonrpc (mostly) according to specs
-  * parameter support
+  * simples server and client classes
 
-TODO
-----
+Usage
+-----
+  * read the doctests!
+
+To do
+-----
   * implement batch support
-  * implement networking support
   * add docs
   * ... test moar!
